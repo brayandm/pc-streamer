@@ -5,25 +5,22 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+camera = cv2.VideoCapture(0)
+camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+
 
 def generate_frames():
-    camera = cv2.VideoCapture(0)  # Usa 0 para la cámara integrada
-    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)  # Ancho más bajo
-    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)  # Altura más baja
-
     while True:
-        success, frame = camera.read()  # Lee el frame de la cámara
+        success, frame = camera.read()
         if not success:
             break
         else:
-            # Ajusta la calidad de la imagen a 50 (Puedes modificar este valor)
             ret, buffer = cv2.imencode(
                 ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50]
             )
             frame = buffer.tobytes()
-            yield (
-                b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
-            )  # Transmite el frame como JPEG
+            yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
 
 
 @app.route("/video_feed")
@@ -79,4 +76,4 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, threaded=True)
