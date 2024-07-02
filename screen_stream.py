@@ -11,24 +11,20 @@ CORS(app)
 
 def generate_frames():
     with mss.mss() as sct:
-        # Obtiene las dimensiones del monitor
         monitor = sct.monitors[1]
 
         while True:
-            # Captura la pantalla
             sct_img = sct.grab(monitor)
 
-            # Convierte la imagen a un array numpy
             img = np.array(sct_img)
 
-            # Convierte de BGRA a BGR
+            img = cv2.resize(img, (1280, 720))
+
             img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
-            # Codifica la imagen a formato JPEG
             ret, buffer = cv2.imencode(".jpg", img, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
             frame = buffer.tobytes()
 
-            # Genera el frame en el formato adecuado
             yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
 
 
